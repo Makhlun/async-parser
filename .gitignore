@@ -1,0 +1,13 @@
+# Virtual environment
+.venv/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Secrets — real values live here, never committed (see .env.example)
+.env
+
+# Scraped output — regenerable, keeps history small
+data/*.db
+data/*.csv
