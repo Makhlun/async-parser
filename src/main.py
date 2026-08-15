@@ -1,11 +1,15 @@
 from fetcher import Fetcher
+from parser import Parser
+from storage import Storage
 
-url = "https://jobs.dou.ua/vacancies/"
+URL = "https://jobs.dou.ua/vacancies/"
+STORAGE_PATH = "./data/output.csv"
 
 fetcher = Fetcher()
-data = fetcher.fetch(url=url)
+parser = Parser()
+storage = Storage()
 
-open("data/sample.html", "w", encoding="utf-8").write(data)
+data = fetcher.fetch(url=URL)
 
-with open("data/sample.html", encoding="utf-8") as f:
-    html = f.read()
+parsed_data = parser.parse(data)
+storage.save(parsed_data, STORAGE_PATH)

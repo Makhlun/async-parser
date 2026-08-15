@@ -21,15 +21,11 @@ class Parser:
             if vacancy_description is None:
                 continue
 
-            title = vacancy_description.find("a", class_="vt")
-            if title is None:
+            title_link = vacancy_description.find("a", class_="vt")
+            if title_link is None:
                 continue
-            title = title.get_text(strip=True)
-
-            link = vacancy_description.find("a", class_="vt")
-            if link is None:
-                continue
-            link = link.get("href")
+            title = title_link.get_text(strip=True)
+            link = title_link.get("href")
             
             company = vacancy_description.find("a", class_="company")
             if company is not None:
