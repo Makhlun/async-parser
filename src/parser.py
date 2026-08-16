@@ -1,4 +1,7 @@
 from bs4 import BeautifulSoup
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Parser:
     
@@ -54,5 +57,8 @@ class Parser:
             }
 
             vacancies_list.append(vacancy_dict)
+
+        logger.info(f"Total parsed records: {len(vacancies_list)}")
+        
         return vacancies_list
         

@@ -1,4 +1,7 @@
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Fetcher:
     HEADERS = {
@@ -6,6 +9,9 @@ class Fetcher:
         }
 
     def fetch(self, url):
+        logger.info(f"Fetching url: {url}")
         response = requests.get(url, headers=self.HEADERS)
         response.raise_for_status()
+        logger.info(f"Fetched with {response.status_code} status.")
+
         return response.text

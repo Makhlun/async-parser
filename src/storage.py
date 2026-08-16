@@ -1,4 +1,7 @@
 import csv
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Storage:
     def save(self, records, file_path):
@@ -7,3 +10,5 @@ class Storage:
             writer = csv.DictWriter(file, fieldnames=fieldnames) 
             writer.writeheader()
             writer.writerows(records)
+
+        logger.info(f"Total written rows: {len(records)} at \"{file_path}\" file.")
