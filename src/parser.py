@@ -8,7 +8,18 @@ class Parser:
     def parse(self, html):
         soup = BeautifulSoup(html, "html.parser")
         container = soup.find(id="vacancyListId")
+
+        if container is None:
+            logger.error("Error at finding list of vacancies.")
+            raise ValueError("Error at receiving correct HTML. Nothing to parse.")
+
         vacancies = container.find_all("li", class_="l-vacancy")
+        vacancies_to_parse = len(vacancies)
+
+        if vacancies_to_parse==0:
+            logger.warning(f"Vacancies to parse: {vacancies_to_parse}.")
+        else:
+            logger.info(f"Vacancies to parse: {vacancies_to_parse}.")
 
         vacancies_list = []
 
@@ -59,6 +70,6 @@ class Parser:
             vacancies_list.append(vacancy_dict)
 
         logger.info(f"Total parsed records: {len(vacancies_list)}")
-        
+
         return vacancies_list
         
