@@ -33,15 +33,16 @@ class Fetcher:
             response_json = self._load(url, token, offset)
             result.append(response_json['html'])
             offset += response_json['num']
+            logger.info(f"Fetched {offset} records.")
 
             if response_json['last']:
-                logger.info(f"Fetched {offset} records.")
-
                 return result
+
         logger.warning(f"Reached limit of page load. Fetched {offset} records.")
         return result
-                
+
     @decorators.retry()
+    @decorators.rate_limit()
     def _load(self, url, token, count):
         load_dict = {'csrfmiddlewaretoken': token, 'count':count}
         response = self.session.post(f"{url}xhr-load/", 
