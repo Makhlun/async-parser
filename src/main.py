@@ -20,7 +20,10 @@ parser = Parser()
 storage = Storage()
 try:
     data = fetcher.fetch(url=URL)
-    parsed_data = parser.parse(data)
+    parsed_data = []
+    for fragment in data:
+        parsed_fragment = parser.parse(fragment)
+        parsed_data.extend(parsed_fragment)
     storage.save(parsed_data, STORAGE_PATH)
 except Exception as e:
     logger.exception(f"Run failed: {e}")
