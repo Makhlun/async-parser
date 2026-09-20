@@ -7,13 +7,8 @@ class Parser:
     
     def parse(self, html):
         soup = BeautifulSoup(html, "html.parser")
-        container = soup.find(id="vacancyListId")
-
-        if container is None:
-            logger.error("Error at finding list of vacancies.")
-            raise ValueError("Error at receiving correct HTML. Nothing to parse.")
-
-        vacancies = container.find_all("li", class_="l-vacancy")
+        
+        vacancies = soup.find_all("li", class_="l-vacancy")
         vacancies_to_parse = len(vacancies)
 
         if vacancies_to_parse==0:

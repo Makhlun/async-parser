@@ -45,3 +45,15 @@ def retry_wait_for(status_code, e):
             except (ValueError, TypeError) as err:
                 logger.warning(f"Error in converting {wait}. Except with {err}. Additional delay set to 0.")
     return 0
+
+def rate_limit(delay = 2):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args,**kwargs):
+            time.sleep(delay)
+            return func(*args,**kwargs)
+        return wrapper
+    return decorator
+
+
+    
