@@ -3,6 +3,7 @@ from parser import Parser
 from storage import Storage
 import logging
 import sys
+import asyncio
 
 URL = "https://jobs.dou.ua/vacancies/"
 STORAGE_PATH = "./data/output.csv"
@@ -15,17 +16,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.info("Start Running.")
 
+async def main():
+    try:
+        data = await fetcher.fetch(url=URL)
+        parsed_data = []
+        for fragment in data:
+            parsed_fragment = parser.parse(fragment)
+            parsed_data.extend(parsed_fragment)
+        storage.save(parsed_data, STORAGE_PATH)
+    except Exception as e:
+        logger.exception(f"Run failed: {e}")
+        sys.exit(1)
+
 fetcher = Fetcher()
 parser = Parser()
 storage = Storage()
-try:
-    data = fetcher.fetch(url=URL)
-    parsed_data = []
-    for fragment in data:
-        parsed_fragment = parser.parse(fragment)
-        parsed_data.extend(parsed_fragment)
-    storage.save(parsed_data, STORAGE_PATH)
-except Exception as e:
-    logger.exception(f"Run failed: {e}")
-    sys.exit(1)
 
+asyncio.run(main())

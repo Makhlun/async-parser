@@ -1,4 +1,4 @@
-import requests
+import aiohttp
 import logging
 import decorators
 
@@ -11,45 +11,42 @@ class Fetcher:
 
         }
     MAX_PAGES = 5
-    def __init__(self):
-        self.session = requests.Session()
+    TIMEOUT = 10
 
 
+    async def fetch(self, url):
+        async with aiohttp.ClientSession() as self.session:
+            logger.info(f"Fetching url: {url}")
 
-    def fetch(self, url):
+            async with self.session.get(url, headers=self.HEADERS, timeout=aiohttp.ClientTimeout(total=self.TIMEOUT)) as response:
+                response.raise_for_status()
+                logger.info(f"Fetched with {response.status} status.")
+                token = response.cookies['csrftoken'].value
+            offset = 0
 
-        logger.info(f"Fetching url: {url}")
+            result = []
 
-        response = self.session.get(url, headers=self.HEADERS, timeout=10)
-        response.raise_for_status()
-        logger.info(f"Fetched with {response.status_code} status.")
+            for _ in range(self.MAX_PAGES):
+                response_json = await self._load(url, token, offset)
+                result.append(response_json['html'])
+                offset += response_json['num']
+                logger.info(f"Fetched {offset} records.")
 
-        token = self.session.cookies.get_dict()['csrftoken']
-        offset = 0
+                if response_json['last']:
+                    return result
 
-        result = []
-
-        for _ in range(self.MAX_PAGES):
-            response_json = self._load(url, token, offset)
-            result.append(response_json['html'])
-            offset += response_json['num']
-            logger.info(f"Fetched {offset} records.")
-
-            if response_json['last']:
-                return result
-
-        logger.warning(f"Reached limit of page load. Fetched {offset} records.")
-        return result
+            logger.warning(f"Reached limit of page load. Fetched {offset} records.")
+            return result
 
     @decorators.retry()
     @decorators.rate_limit()
-    def _load(self, url, token, count):
+    async def _load(self, url, token, count):
         load_dict = {'csrfmiddlewaretoken': token, 'count':count}
-        response = self.session.post(f"{url}xhr-load/", 
+        response = await self.session.post(f"{url}xhr-load/", 
                                         headers=self.HEADERS, 
                                         data=load_dict)
         response.raise_for_status()
         
-        response_json = response.json()
+        response_json = await response.json()
 
         return response_json
