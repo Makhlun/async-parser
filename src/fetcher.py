@@ -1,3 +1,5 @@
+import asyncio
+
 import aiohttp
 import logging
 import decorators
@@ -10,7 +12,7 @@ class Fetcher:
             "Referer": "https://jobs.dou.ua/vacancies/",
 
         }
-    MAX_PAGES = 5
+    MAX_PAGES = 10
     TIMEOUT = 10
 
 
@@ -26,16 +28,19 @@ class Fetcher:
 
             result = []
 
-            for _ in range(self.MAX_PAGES):
-                response_json = await self._load(url, token, offset)
-                result.append(response_json['html'])
-                offset += response_json['num']
-                logger.info(f"Fetched {offset} records.")
+            offset_loop = [0, 40, 80, 120, 160]
+            response_json_set = await asyncio.gather(*[self._load(url, token, offset) for offset in offset_loop])
+            result.extend(response_json['html'] for response_json in response_json_set)
+            # for _ in range(self.MAX_PAGES):
+            #     response_json = await self._load(url, token, offset)
+            #     result.append(response_json['html'])
+            #     offset += response_json['num']
+            #     logger.info(f"Fetched {offset} records.")
 
-                if response_json['last']:
-                    return result
+            #     if response_json['last']:
+            #         return result
 
-            logger.warning(f"Reached limit of page load. Fetched {offset} records.")
+            logger.warning(f"Reached limit of page load. Fetched {offset_loop[-1]} records.")
             return result
 
     @decorators.retry()
