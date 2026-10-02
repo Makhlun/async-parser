@@ -14,7 +14,7 @@ class Parser:
         if vacancies_to_parse==0:
             logger.warning(f"Vacancies to parse: {vacancies_to_parse}.")
         else:
-            logger.info(f"Vacancies to parse: {vacancies_to_parse}.")
+            logger.debug(f"Vacancies to parse: {vacancies_to_parse}.")
 
         vacancies_list = []
 
@@ -64,7 +64,7 @@ class Parser:
 
             vacancies_list.append(vacancy_dict)
 
-        logger.info(f"Total parsed records: {len(vacancies_list)}")
+        logger.debug(f"Total parsed records: {len(vacancies_list)}")
 
         return vacancies_list
         

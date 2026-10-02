@@ -1,4 +1,6 @@
-import requests
+import asyncio
+
+import aiohttp
 import logging
 import decorators
 
@@ -10,46 +12,56 @@ class Fetcher:
             "Referer": "https://jobs.dou.ua/vacancies/",
 
         }
-    MAX_PAGES = 5
-    def __init__(self):
-        self.session = requests.Session()
+    MAX_PAGES = 1000
+    TIMEOUT = 10
+    WAVE_PAGES = 5
+    PAGE_SIZE = 40
 
 
+    async def fetch(self, url):
+        async with aiohttp.ClientSession() as self.session:
+            logger.info(f"Fetching url: {url}")
 
-    def fetch(self, url):
+            async with self.session.get(url, headers=self.HEADERS, timeout=aiohttp.ClientTimeout(total=self.TIMEOUT)) as response:
+                response.raise_for_status()
+                logger.info(f"Fetched with {response.status} status.")
+                token = response.cookies['csrftoken'].value
+            result = []
 
-        logger.info(f"Fetching url: {url}")
+            
+            for page in range(0, self.MAX_PAGES, self.WAVE_PAGES):
+                loads = [self._load(url, token, page_extract*self.PAGE_SIZE) 
+                                for page_extract 
+                                in range(page, min(page+self.WAVE_PAGES, self.MAX_PAGES))
+                    ]
+                response_json_set = await asyncio.gather(*loads)
+                
+                response_json_html = [response_json.get('html', '')
+                                for response_json 
+                                in response_json_set]
+                response_json_last = [response_json.get('last') 
+                                for response_json 
+                                in response_json_set]
+                result.extend(filter(None,response_json_html))
 
-        response = self.session.get(url, headers=self.HEADERS, timeout=10)
-        response.raise_for_status()
-        logger.info(f"Fetched with {response.status_code} status.")
+                if (True in response_json_last) or ('' in response_json_html):
+                    logger.info(f"Reached last record. Fetched {len(result)} pages.")
+                    return result
+                
+                logger.info(f"Fetched {len(result)} pages.")
 
-        token = self.session.cookies.get_dict()['csrftoken']
-        offset = 0
-
-        result = []
-
-        for _ in range(self.MAX_PAGES):
-            response_json = self._load(url, token, offset)
-            result.append(response_json['html'])
-            offset += response_json['num']
-            logger.info(f"Fetched {offset} records.")
-
-            if response_json['last']:
-                return result
-
-        logger.warning(f"Reached limit of page load. Fetched {offset} records.")
-        return result
+            logger.warning(f"Reached limit of page load. Fetched {len(result)} pages.")
+            return result
 
     @decorators.retry()
-    @decorators.rate_limit()
-    def _load(self, url, token, count):
+    @decorators.limit_concurrency()
+    async def _load(self, url, token, count):
         load_dict = {'csrfmiddlewaretoken': token, 'count':count}
-        response = self.session.post(f"{url}xhr-load/", 
+        response = await self.session.post(f"{url}xhr-load/", 
                                         headers=self.HEADERS, 
                                         data=load_dict)
         response.raise_for_status()
         
-        response_json = response.json()
+        response_json = await response.json()
 
         return response_json
