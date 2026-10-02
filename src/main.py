@@ -4,6 +4,7 @@ from storage import Storage
 import logging
 import sys
 import asyncio
+import time
 
 URL = "https://jobs.dou.ua/vacancies/"
 STORAGE_PATH = "./data/output.csv"
@@ -18,7 +19,10 @@ logger.info("Start Running.")
 
 async def main():
     try:
+        start = time.perf_counter()
         data = await fetcher.fetch(url=URL)
+        end = time.perf_counter()
+        logger.info(f"Fetching took {(end-start):.2f} seconds.")
         parsed_data = []
         for fragment in data:
             parsed_fragment = parser.parse(fragment)

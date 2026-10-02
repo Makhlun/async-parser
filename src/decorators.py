@@ -46,14 +46,13 @@ def retry_wait_for(status_code, e):
                 logger.warning(f"Error in converting {wait}. Except with {err}. Additional delay set to 0.")
     return 0
 
-def rate_limit(delay = 2):
+def limit_concurrency(max_concurrent = 5):
+    semaphore = asyncio.Semaphore(max_concurrent)
+
     def decorator(func):
         @functools.wraps(func)
         async def wrapper(*args,**kwargs):
-            await asyncio.sleep(delay)
-            return await func(*args,**kwargs)
+            async with semaphore:
+                return await func(*args,**kwargs)
         return wrapper
     return decorator
-
-
-    

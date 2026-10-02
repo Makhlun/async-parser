@@ -11,7 +11,7 @@ with requests.Session() as session:
     print(session.cookies.get_dict())
     csrftoken = session.cookies.get_dict()['csrftoken']
 
-    load_dict = {'csrfmiddlewaretoken':csrftoken, 'count':0}
+    load_dict = {'csrfmiddlewaretoken':csrftoken, 'count':6000}
 
     response = session.post("https://jobs.dou.ua/vacancies/xhr-load/", 
                             headers=HEADERS, 
