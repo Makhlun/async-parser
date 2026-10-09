@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import logging
+from urllib.parse import urlsplit
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,9 @@ class Parser:
             if title_link is None:
                 continue
             title = title_link.get_text(strip=True)
-            link = title_link.get("href")
+            link_details = urlsplit(title_link.get("href"))
+            link = link_details._replace(query="").geturl()
+            is_hot = "list_hot" in link_details.query
             
             company = vacancy_description.find("a", class_="company")
             if company is not None:
@@ -59,7 +62,8 @@ class Parser:
                 "salary":salary,
                 "link":link,
                 "company":company,
-                "location":location
+                "location":location,
+                "is_hot": is_hot,
             }
 
             vacancies_list.append(vacancy_dict)
