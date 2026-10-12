@@ -32,6 +32,5 @@ jobs:
       - name: Add new version of vacancies if exists
         run: |
           git add data/vacancies.db
-          git diff --staged --quiet || git commit -m "Scraped $(date+%F)"
-          git pull
+          git diff --staged --quiet || git commit -m "Scraped $(date +%F)"
           git push
