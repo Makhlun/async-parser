@@ -4,9 +4,7 @@ on:
   schedule:
     - cron: "15 0 * * *"
   workflow_dispatch:
-  push:
-    branches: [feature/automation]
-
+  
 permissions:
   contents: write
 
@@ -34,6 +32,6 @@ jobs:
       - name: Add new version of vacancies if exists
         run: |
           git add data/vacancies.db
-          git diff --staged --quiet || git commit -m "Scraped $(date)+%F"
+          git diff --staged --quiet || git commit -m "Scraped $(date+%F)"
           git pull
           git push
