@@ -9,5 +9,4 @@ __pycache__/
 .env
 
 # Scraped output — regenerable, keeps history small
-!data/*.db
 data/*.csv
